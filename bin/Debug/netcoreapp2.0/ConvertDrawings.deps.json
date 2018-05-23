@@ -1,0 +1,38 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v2.0",
+    "signature": "e53c7ba32c76011f4ad493a37aec63528ef69b3c"
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v2.0": {
+      "ConvertDrawings/1.0.0": {
+        "dependencies": {
+          "Microsoft.XmlSerializer.Generator": "1.0.0"
+        },
+        "runtime": {
+          "ConvertDrawings.dll": {}
+        }
+      },
+      "Microsoft.XmlSerializer.Generator/1.0.0": {
+        "runtime": {
+          "lib/netstandard2.0/dotnet-Microsoft.XmlSerializer.Generator.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ConvertDrawings/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.XmlSerializer.Generator/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3diceepLg5K9L2qcQSTaw6p4ohf4ExWAS8Fko9idjRUdnsGM6FzN/3EGpqyzSDKSicwniAJ0k3fvgxlxgULdFw==",
+      "path": "microsoft.xmlserializer.generator/1.0.0",
+      "hashPath": "microsoft.xmlserializer.generator.1.0.0.nupkg.sha512"
+    }
+  }
+}
