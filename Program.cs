@@ -6,6 +6,7 @@ using System.Collections;
 using System.Linq;
 using System.IO;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace ConvertDrawings
 {
@@ -15,10 +16,18 @@ namespace ConvertDrawings
         {
             Console.WriteLine("Hello World!");
 
+            string sourcePath = @"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Sources\Architecte #14.svg";
+
+
+            string sourceName = System.IO.Path.GetFileNameWithoutExtension(sourcePath);
+            string content = File.ReadAllText(sourcePath);
+
             //Read XMl
             XmlSerializer serializer = new XmlSerializer(typeof(Svg));
 
-            Svg svg = (Svg)serializer.Deserialize(XmlReader.Create(@"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\ARC.svg"));
+            StringReader stringReader = new StringReader(XmlConvert.EncodeName(content));
+
+            Svg svg = (Svg)serializer.Deserialize(XmlReader.Create(stringReader));
 
             List<G> levels = svg.G.g.FirstOrDefault().g;
 
@@ -42,7 +51,7 @@ namespace ConvertDrawings
                 //Find all spaces
                 List<G> elements = level.g;
                 List<G> spaces = elements.Where(x => x.Class == "bs-ifcspace bs-ifcproduct").ToList();
-                
+
                 foreach (G space in spaces)
                 {
                     foreach (Polygon spacePolygon in space.Polygon)
@@ -61,11 +70,13 @@ namespace ConvertDrawings
             resultingSVG.Polygon = polygons;
 
             XmlSerializer ser = new XmlSerializer(typeof(Shape.Svg));
-            string path = System.IO.Path.Combine(@"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Levels", "project" + ".svg");
+            string path = System.IO.Path.Combine(@"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Results", sourceName + ".edited.svg");
 
             TextWriter writer = new StreamWriter(path);
             ser.Serialize(writer, resultingSVG);
             writer.Close();
+
+
 
         }
 
@@ -105,6 +116,28 @@ namespace ConvertDrawings
 
             return result;
         }
+
+        static void RemoveInvalidChars(string path)
+        {
+            string text = File.ReadAllText(path);
+
+            Regex regex = new Regex(@"data-longname="".*?""");
+            MatchCollection matchs = regex.Matches(text);
+            if (matchs.Count != 0)
+            {
+                foreach (Match match in matchs)
+                {
+                    if (match.Value.Contains("<"))
+                    {
+                        string newValue = match.Value.Replace("<", "").Replace("&", "");
+                        text = text.Replace(match.Value, newValue);
+                    }
+                }
+            }
+
+            File.WriteAllText(path, text);
+        }
+
     }
 }
 
