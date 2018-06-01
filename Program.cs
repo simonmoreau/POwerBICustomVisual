@@ -45,11 +45,11 @@ namespace ConvertDrawings
                 resultingSVG.Width = "100%";
                 resultingSVG.Space = "preserve";
 
-                List<Shape.Polygon> polygons = new List<Shape.Polygon>();
-
                 int i = 1;
                 foreach (G level in levels)
                 {
+                    List<Shape.Polygon> polygons = new List<Shape.Polygon>();
+
                     //Find all spaces
                     List<G> elements = level.g;
                     List<G> spaces = elements.Where(x => x.Class == "bs-ifcspace bs-ifcproduct").ToList();
