@@ -21,14 +21,22 @@ namespace ConvertDrawings
     {
         [XmlElement(ElementName = "polyline", Namespace = "http://www.w3.org/2000/svg")]
         public List<Polyline> Polyline { get; set; }
+
+        [XmlElement(ElementName = "path", Namespace = "http://www.w3.org/2000/svg")]
+        public List<Path> Path { get; set; }
+
         [XmlAttribute(AttributeName = "class")]
         public string Class { get; set; }
+
         [XmlAttribute(AttributeName = "data-guid")]
         public string Dataguid { get; set; }
+
         [XmlAttribute(AttributeName = "data-id")]
         public string Dataid { get; set; }
+
         [XmlElement(ElementName = "g", Namespace = "http://www.w3.org/2000/svg")]
         public List<G> g { get; set; }
+
         [XmlElement(ElementName = "polygon", Namespace = "http://www.w3.org/2000/svg")]
         public List<Polygon> Polygon { get; set; }
 
