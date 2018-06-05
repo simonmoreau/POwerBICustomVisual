@@ -8,7 +8,6 @@ using System.IO;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Text;
-using Svg;
 
 namespace ConvertDrawings
 {
@@ -20,7 +19,7 @@ namespace ConvertDrawings
         {
             Console.WriteLine("Hello World!");
 
-            string sourcePath = @"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Sources\Architecte #14.svg";
+            string sourcePath = @"C:\Users\Simon\Github\POwerBICustomVisual\Sources\Architecte #14.svg";
             string sourceName = System.IO.Path.GetFileNameWithoutExtension(sourcePath);
             string testPath = @"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\test.xml";
             string tempPath = @"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Sources\temp.svg";
@@ -50,8 +49,6 @@ namespace ConvertDrawings
                 resultingSVG.Width = "100%";
                 resultingSVG.Space = "preserve";
 
-
-
                 int i = 1;
                 foreach (G level in levels)
                 {
@@ -64,32 +61,23 @@ namespace ConvertDrawings
                     paths.AddRange(ConvertSVGElements(elements, "bs-ifcspace bs-ifcproduct"));
                     paths.AddRange(ConvertSVGElements(elements, "bs-ifcstairflight bs-ifcproduct"));
                     paths.AddRange(ConvertSVGElements(elements, "bs-ifcwall bs-ifcproduct"));
+                    paths.AddRange(ConvertSVGElements(elements, "bs-ifcwallstandardcase bs-ifcproduct"));
 
                     resultingSVG.Path = paths;
                     resultingSVG.ViewBox = ReframeViewbox();
 
-                    
-
-                    string resultPath = System.IO.Path.Combine(@"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Results", sourceName + ".svg");
-
-
-                    StringWriter writer = new StringWriter ();
+                    StringWriter writer = new StringWriter();
 
                     XmlSerializer ser = new XmlSerializer(typeof(Shape.Svg));
                     ser.Serialize(writer, resultingSVG);
                     string svgFileContents = writer.ToString();
                     writer.Close();
 
-                    var byteArray = Encoding.ASCII.GetBytes(svgFileContents);
-                    using (var stream = new MemoryStream(byteArray))
-                    {
-                        SvgDocument svgDocument = SvgDocument.Open<SvgDocument>(stream);
-                        //System.Drawing.Bitmap bitmap = svgDocument.Draw();
-                    }
+                    string resultPath = System.IO.Path.Combine(@"C:\Users\Simon\Github\POwerBICustomVisual\Results", sourceName + level.Name + ".svg");
+
+                    File.WriteAllText(resultPath,svgFileContents);
+
                 }
-
-
-
             }
         }
 
