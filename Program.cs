@@ -13,6 +13,8 @@ namespace ConvertDrawings
 {
     class Program
     {
+        static List<double> xValues = new List<double>();
+        static List<double> yValues = new List<double>();
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
@@ -40,15 +42,16 @@ namespace ConvertDrawings
                 resultingSVG.Class = "gen-by-synoptic-designer";
                 resultingSVG.Xmlns = "http://www.w3.org/2000/svg";
                 resultingSVG.Xlink = "http://www.w3.org/1999/xlink";
-                resultingSVG.ViewBox = ScaleViewPort(svg.ViewBox, 100);
                 resultingSVG.Height = "100%";
                 resultingSVG.Width = "100%";
                 resultingSVG.Space = "preserve";
 
+                List<Shape.Polygon> polygons = new List<Shape.Polygon>();
+
                 int i = 1;
                 foreach (G level in levels)
                 {
-                    List<Shape.Polygon> polygons = new List<Shape.Polygon>();
+
 
                     //Find all spaces
                     List<G> elements = level.g;
@@ -61,23 +64,23 @@ namespace ConvertDrawings
                             Shape.Polygon polygon = new Shape.Polygon();
                             polygon.Id = space.Dataid;
                             polygon.Title = "";
-                            polygon.Points = ScalePoints(spacePolygon.Points, 30);
+                            polygon.Points = ScalePoints(spacePolygon.Points, 100);
 
                             polygons.Add(polygon);
                             i++;
                         }
                     }
-
-                    resultingSVG.Polygon = polygons;
-
-                    XmlSerializer ser = new XmlSerializer(typeof(Shape.Svg));
-                    string path = System.IO.Path.Combine(@"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Results", sourceName + level.Name + ".svg");
-
-                    TextWriter writer = new StreamWriter(path);
-                    ser.Serialize(writer, resultingSVG);
-                    writer.Close();
                 }
 
+                resultingSVG.Polygon = polygons;
+                resultingSVG.ViewBox = ReframeViewbox();
+
+                XmlSerializer ser = new XmlSerializer(typeof(Shape.Svg));
+                string path = System.IO.Path.Combine(@"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Results", sourceName + ".svg");
+
+                TextWriter writer = new StreamWriter(path);
+                ser.Serialize(writer, resultingSVG);
+                writer.Close();
 
             }
 
@@ -97,7 +100,9 @@ namespace ConvertDrawings
                 string y = coordinate.Split(",")[1];
 
                 double xValue = double.Parse(x, CultureInfo.InvariantCulture) * value;
+                xValues.Add(xValue);
                 double yValue = double.Parse(y, CultureInfo.InvariantCulture) * value;
+                yValues.Add(yValue);
 
                 result = result + xValue.ToString(CultureInfo.InvariantCulture) + "," + yValue.ToString(CultureInfo.InvariantCulture) + " ";
             }
@@ -105,7 +110,7 @@ namespace ConvertDrawings
             return result;
         }
 
-        static string ScaleViewPort(string viewport, double value)
+        static string ScaleViewbox(string viewport, double value)
         {
             string[] coordinates = viewport.Split(' ');
             string result = "";
@@ -120,6 +125,22 @@ namespace ConvertDrawings
             }
 
             return result;
+        }
+
+        static string ReframeViewbox()
+        {
+            double offset = (xValues.Max() - xValues.Min())/20;
+            double minx = xValues.Min() - offset;
+            double miny = yValues.Min() - offset;
+            double width = xValues.Max() - xValues.Min() + 2 * offset;
+            double height = yValues.Max() - yValues.Min() + 2 * offset;
+            string viewBox =
+            minx.ToString(CultureInfo.InvariantCulture) + " " +
+            miny.ToString(CultureInfo.InvariantCulture) + " " +
+            width.ToString(CultureInfo.InvariantCulture) + " " +
+            height.ToString(CultureInfo.InvariantCulture);
+
+            return viewBox;
         }
 
         static string StripNonValidXMLCharacters(string textIn)
