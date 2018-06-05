@@ -21,10 +21,24 @@ namespace ConvertDrawings.Shape
 		public string Transform { get; set; }
 	}
 
+		[XmlRoot(ElementName="path", Namespace="http://www.w3.org/2000/svg")]
+	public class Path {
+		[XmlAttribute(AttributeName="id")]
+		public string Id { get; set; }
+		[XmlAttribute(AttributeName="title")]
+		public string Title { get; set; }
+		[XmlAttribute(AttributeName="d")]
+		public string D { get; set; }
+		[XmlAttribute(AttributeName="transform")]
+		public string Transform { get; set; }
+	}
+
 	[XmlRoot(ElementName="svg", Namespace="http://www.w3.org/2000/svg")]
 	public class Svg {
 		[XmlElement(ElementName="polygon", Namespace="http://www.w3.org/2000/svg")]
 		public List<Polygon> Polygon { get; set; }
+				[XmlElement(ElementName="path", Namespace="http://www.w3.org/2000/svg")]
+		public List<Path> Path { get; set; }
 		[XmlAttribute(AttributeName="version")]
 		public string Version { get; set; }
 		[XmlAttribute(AttributeName="id")]

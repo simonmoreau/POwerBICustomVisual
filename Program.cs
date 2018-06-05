@@ -20,14 +20,18 @@ namespace ConvertDrawings
             Console.WriteLine("Hello World!");
 
             string sourcePath = @"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Sources\Architecte #14.svg";
-            string testPath = @"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\test.xml";
-
             string sourceName = System.IO.Path.GetFileNameWithoutExtension(sourcePath);
+            string testPath = @"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\test.xml";
+            string tempPath = @"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Sources\temp.svg";
+            string resultPath = System.IO.Path.Combine(@"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Results", sourceName + ".svg");
+
+
             string content = File.ReadAllText(sourcePath);
+            string encodedString = StripNonValidXMLCharacters(content);
 
             //Read XMl
             XmlSerializer serializer = new XmlSerializer(typeof(Svg));
-            string encodedString = StripNonValidXMLCharacters(content);
+
 
             using (TextReader reader = new StringReader(encodedString))
             {
@@ -46,7 +50,7 @@ namespace ConvertDrawings
                 resultingSVG.Width = "100%";
                 resultingSVG.Space = "preserve";
 
-                List<Shape.Polygon> polygons = new List<Shape.Polygon>();
+                List<Shape.Path> paths = new List<Shape.Path>();
 
                 int i = 1;
                 foreach (G level in levels)
@@ -59,26 +63,26 @@ namespace ConvertDrawings
 
                     foreach (G space in spaces)
                     {
+                        Shape.Path path = new Shape.Path();
+                        path.Id = space.Dataid;
+                        path.Title = "";
+
+
                         foreach (Polygon spacePolygon in space.Polygon)
                         {
-                            Shape.Polygon polygon = new Shape.Polygon();
-                            polygon.Id = space.Dataid;
-                            polygon.Title = "";
-                            polygon.Points = ScalePoints(spacePolygon.Points, 100);
-
-                            polygons.Add(polygon);
-                            i++;
+                            path.D = path.D + PointsToPath(spacePolygon.Points, 100);
                         }
+
+                        paths.Add(path);
                     }
                 }
 
-                resultingSVG.Polygon = polygons;
+                resultingSVG.Path = paths;
                 resultingSVG.ViewBox = ReframeViewbox();
 
                 XmlSerializer ser = new XmlSerializer(typeof(Shape.Svg));
-                string path = System.IO.Path.Combine(@"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Results", sourceName + ".svg");
 
-                TextWriter writer = new StreamWriter(path);
+                TextWriter writer = new StreamWriter(resultPath);
                 ser.Serialize(writer, resultingSVG);
                 writer.Close();
 
@@ -87,6 +91,7 @@ namespace ConvertDrawings
 
 
         }
+        
 
         static string ScalePoints(string points, double value)
         {
@@ -110,6 +115,31 @@ namespace ConvertDrawings
             return result;
         }
 
+        static string PointsToPath(string points, double value)
+        {
+            string[] coordinates = points.Split(' ');
+            string result = "";
+            bool startingPoint = true;
+
+            foreach (string coordinate in coordinates)
+            {
+                string command = "L ";
+                if (startingPoint) { command = "M ";startingPoint = false; }
+                //"-4.061,-16.7242 -4.061,-17.4829 -5.291,-17.4829 -5.291,-16.3916 -5.291,-15.6329 -4.061,-15.6329 -4.061,-16.7242"
+                string x = coordinate.Split(",")[0];
+                string y = coordinate.Split(",")[1];
+
+                double xValue = double.Parse(x, CultureInfo.InvariantCulture) * value;
+                xValues.Add(xValue);
+                double yValue = double.Parse(y, CultureInfo.InvariantCulture) * value;
+                yValues.Add(yValue);
+
+                result = result + command + xValue.ToString(CultureInfo.InvariantCulture) + " " + yValue.ToString(CultureInfo.InvariantCulture) + " ";
+            }
+
+            return result + "z ";
+        }
+
         static string ScaleViewbox(string viewport, double value)
         {
             string[] coordinates = viewport.Split(' ');
@@ -129,7 +159,7 @@ namespace ConvertDrawings
 
         static string ReframeViewbox()
         {
-            double offset = (xValues.Max() - xValues.Min())/20;
+            double offset = (xValues.Max() - xValues.Min()) / 20;
             double minx = xValues.Min() - offset;
             double miny = yValues.Min() - offset;
             double width = xValues.Max() - xValues.Min() + 2 * offset;
