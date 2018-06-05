@@ -8,6 +8,7 @@ using System.IO;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Text;
+using Svg;
 
 namespace ConvertDrawings
 {
@@ -23,7 +24,6 @@ namespace ConvertDrawings
             string sourceName = System.IO.Path.GetFileNameWithoutExtension(sourcePath);
             string testPath = @"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\test.xml";
             string tempPath = @"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Sources\temp.svg";
-            string resultPath = System.IO.Path.Combine(@"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Results", sourceName + ".svg");
 
 
             string content = File.ReadAllText(sourcePath);
@@ -50,31 +50,47 @@ namespace ConvertDrawings
                 resultingSVG.Width = "100%";
                 resultingSVG.Space = "preserve";
 
-                List<Shape.Path> paths = new List<Shape.Path>();
+
 
                 int i = 1;
                 foreach (G level in levels)
                 {
+                    List<Shape.Path> paths = new List<Shape.Path>();
+
                     //Find all spaces
                     List<G> elements = level.g;
                     paths.AddRange(ConvertSVGElements(elements, "bs-ifcwindow bs-ifcproduct"));
                     paths.AddRange(ConvertSVGElements(elements, "bs-ifcdoor bs-ifcproduct"));
                     paths.AddRange(ConvertSVGElements(elements, "bs-ifcspace bs-ifcproduct"));
+                    paths.AddRange(ConvertSVGElements(elements, "bs-ifcstairflight bs-ifcproduct"));
+                    paths.AddRange(ConvertSVGElements(elements, "bs-ifcwall bs-ifcproduct"));
+
+                    resultingSVG.Path = paths;
+                    resultingSVG.ViewBox = ReframeViewbox();
+
+                    
+
+                    string resultPath = System.IO.Path.Combine(@"C:\Users\smoreau\OneDrive - Bouygues Immobilier\Bureau\PowerBI\ConvertDrawings\Results", sourceName + ".svg");
+
+
+                    StringWriter writer = new StringWriter ();
+
+                    XmlSerializer ser = new XmlSerializer(typeof(Shape.Svg));
+                    ser.Serialize(writer, resultingSVG);
+                    string svgFileContents = writer.ToString();
+                    writer.Close();
+
+                    var byteArray = Encoding.ASCII.GetBytes(svgFileContents);
+                    using (var stream = new MemoryStream(byteArray))
+                    {
+                        SvgDocument svgDocument = SvgDocument.Open<SvgDocument>(stream);
+                        //System.Drawing.Bitmap bitmap = svgDocument.Draw();
+                    }
                 }
 
-                resultingSVG.Path = paths;
-                resultingSVG.ViewBox = ReframeViewbox();
 
-                XmlSerializer ser = new XmlSerializer(typeof(Shape.Svg));
-
-                TextWriter writer = new StreamWriter(resultPath);
-                ser.Serialize(writer, resultingSVG);
-                writer.Close();
 
             }
-
-
-
         }
 
         static List<Shape.Path> ConvertSVGElements(List<G> elements, string elementClass)
@@ -112,7 +128,7 @@ namespace ConvertDrawings
                     if (innerXML.Text != null && innerXML.Text.Count != 0)
                     {
                         Text text = innerXML.Text.FirstOrDefault();
-                        
+
                         path.Title = text.Datalongname;
                     }
 

@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.XmlSerializer.Generator" Version="1.0.0" />
+    <PackageReference Include="svg" Version="2.3.0" />
   </ItemGroup>
   <ItemGroup>
    <DotNetCliToolReference Include="Microsoft.XmlSerializer.Generator" Version="1.0.0" />
