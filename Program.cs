@@ -49,11 +49,11 @@ namespace ConvertDrawings
                 resultingSVG.Width = "100%";
                 resultingSVG.Space = "preserve";
 
+                List<Shape.Path> paths = new List<Shape.Path>();
+
                 int i = 1;
                 foreach (G level in levels)
                 {
-                    List<Shape.Path> paths = new List<Shape.Path>();
-
                     //Find all spaces
                     List<G> elements = level.g;
                     paths.AddRange(ConvertSVGElements(elements, "bs-ifcwindow bs-ifcproduct"));
@@ -62,22 +62,21 @@ namespace ConvertDrawings
                     paths.AddRange(ConvertSVGElements(elements, "bs-ifcstairflight bs-ifcproduct"));
                     paths.AddRange(ConvertSVGElements(elements, "bs-ifcwall bs-ifcproduct"));
                     paths.AddRange(ConvertSVGElements(elements, "bs-ifcwallstandardcase bs-ifcproduct"));
-
-                    resultingSVG.Path = paths;
-                    resultingSVG.ViewBox = ReframeViewbox();
-
-                    StringWriter writer = new StringWriter();
-
-                    XmlSerializer ser = new XmlSerializer(typeof(Shape.Svg));
-                    ser.Serialize(writer, resultingSVG);
-                    string svgFileContents = writer.ToString();
-                    writer.Close();
-
-                    string resultPath = System.IO.Path.Combine(@"C:\Users\Simon\Github\POwerBICustomVisual\Results", sourceName + level.Name + ".svg");
-
-                    File.WriteAllText(resultPath,svgFileContents);
-
                 }
+
+                resultingSVG.Path = paths;
+                resultingSVG.ViewBox = ReframeViewbox();
+
+                StringWriter writer = new StringWriter();
+
+                XmlSerializer ser = new XmlSerializer(typeof(Shape.Svg));
+                ser.Serialize(writer, resultingSVG);
+                string svgFileContents = writer.ToString();
+                writer.Close();
+
+                string resultPath = System.IO.Path.Combine(@"C:\Users\Simon\Github\POwerBICustomVisual\Results", sourceName + ".svg");
+
+                File.WriteAllText(resultPath, svgFileContents);
             }
         }
 
